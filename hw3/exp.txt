@@ -1,0 +1,9 @@
+--Ntraining=3
+--epochs=2000
+--patience=20
+--batch=256
+--shuffle=200
+--monitor=val_sparse_categorical_accuracy
+--padding=valid
+--results_path /home/cs504305/deep_learning_practice/homework/hw3/results/run1
+-v
