@@ -4,10 +4,10 @@
 #SBATCH --cpus-per-task=10
 # memory in MB
 #SBATCH --mem=30000
-#SBATCH --output=results/run1/hw3_%04a_stdout.txt
-#SBATCH --error=results/run1/hw3_%04a_stderr.txt
+#SBATCH --output=results/run4/hw3_%04a_stdout.txt
+#SBATCH --error=results/run4/hw3_%04a_stderr.txt
 #SBATCH --time=48:00:00
-#SBATCH --job-name=HW3_Run1 
+#SBATCH --job-name=HW3_Run4 
 #SBATCH --mail-user=vishnupk@ou.edu
 #SBATCH --mail-type=ALL
 #SBATCH --chdir=/home/cs504305/deep_learning_practice/homework/hw3
@@ -20,4 +20,4 @@
 conda activate tf
 
 # 2023
-python hw3_base.py @oscer.txt @exp_deep.txt @net_deep.txt --exp_index $SLURM_ARRAY_TASK_ID --cpus_per_task $SLURM_CPUS_PER_TASK --results_path results/run1
+python hw3_base.py @oscer.txt @exp_deep.txt @net_deep.txt --exp_index $SLURM_ARRAY_TASK_ID --cpus_per_task $SLURM_CPUS_PER_TASK --results_path results/run4

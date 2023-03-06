@@ -5,4 +5,5 @@
 --shuffle=200
 --monitor=val_sparse_categorical_accuracy
 --padding=valid
--v
+--results_path=results/run3/
+-vv
