@@ -1,9 +1,9 @@
 --Ntraining=3
---epochs=2000
---patience=20
+--epochs=1000
+--patience=50
 --batch=256
 --shuffle=200
 --monitor=val_sparse_categorical_accuracy
 --padding=valid
---results_path=results/run3/
+--results_path=results/shallow/run1
 -vv

@@ -179,7 +179,7 @@ def check_args(args):
     assert (args.Ntraining >= 1 and args.Ntraining <= (args.Nfolds-1)), "Ntraining must be between 1 and Nfolds-2"
     assert (args.dropout is None or (args.dropout > 0.0 and args.dropout < 1)), "Dropout must be between 0 and 1"
     assert (args.lrate > 0.0 and args.lrate < 1), "Lrate must be between 0 and 1"
-    assert (args.L1_regularization is None or (args.L1_regularization > 0.0 and args.L1_regularization < 1)), "L2_regularization must be between 0 and 1"
+    assert (args.L1_regularization is None or (args.L1_regularization > 0.0 and args.L1_regularization < 1)), "L1_regularization must be between 0 and 1"
     assert (args.L2_regularization is None or (args.L2_regularization > 0.0 and args.L2_regularization < 1)), "L2_regularization must be between 0 and 1"
     assert (args.cpus_per_task is None or args.cpus_per_task > 1), "cpus_per_task must be positive or None"
     
@@ -432,6 +432,7 @@ def execute_exp(args=None):
                                           dense_layers=dense_layers,
                                           p_dropout=args.dropout,
                                           p_spatial_dropout=args.spatial_dropout,
+                                          lambda_l1=args.L1_regularization,
                                           lambda_l2=args.L2_regularization,
                                           lrate=args.lrate, n_classes=n_classes,
                                           loss='sparse_categorical_crossentropy',
