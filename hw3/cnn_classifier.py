@@ -137,3 +137,4 @@ def create_cnn_classifier_network(
 
     # Return model
     return model
+
