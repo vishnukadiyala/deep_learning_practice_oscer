@@ -38,9 +38,8 @@
 2
 --hidden
 256
-512
 128
 16
---dropout=.5
+--dropout=.35
 --spatial_dropout=.25
 --l1=0.0001

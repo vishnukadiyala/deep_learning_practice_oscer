@@ -95,7 +95,7 @@ def create_cnn_classifier_network(
             model.add(SpatialDropout2D(p_spatial_dropout))
             
         #Add Max Pooling if exists
-        if n['pool_size'] is not None:    
+        if n['pool_size'] > 1:    
             model.add(MaxPooling2D(pool_size = n['pool_size'], strides = n['strides'], name = 'pool_{}'.format(i+1)))
     
     # Global Max Pooling Layer to find the most important features
