@@ -95,6 +95,7 @@ def create_cnn_classifier_network(
             model.add(SpatialDropout2D(p_spatial_dropout))
             
         #Add Max Pooling if exists
+        # We will add Max Pooling after each convolutional layer only if pool_size > 1. Used this condition to give an input from text file
         if n['pool_size'] > 1:    
             model.add(MaxPooling2D(pool_size = n['pool_size'], strides = n['strides'], name = 'pool_{}'.format(i+1)))
     
