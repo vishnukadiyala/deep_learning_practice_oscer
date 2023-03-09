@@ -88,7 +88,7 @@ def create_cnn_classifier_network(
     
     # Add additional convolutional layers based on conv_layers input file
     for i, n in enumerate(conv_layers):
-        model.add(Conv2D(n['filters'], n['kernel_size'],padding = padding, name = 'conv_{}'.format(i)))
+        model.add(Conv2D(n['filters'], n['kernel_size'],padding = padding, activation = 'elu', name = 'conv_{}'.format(i)))
         
         # Add Spatial Dropout if exists
         if p_spatial_dropout is not None: 
@@ -96,7 +96,7 @@ def create_cnn_classifier_network(
             
         #Add Max Pooling if exists
         # We will add Max Pooling after each convolutional layer only if pool_size > 1. Used this condition to give an input from text file
-        if n['pool_size'] > 1:    
+        if n['pool_size'] is not None and n['pool_size'][0] > 1:    
             model.add(MaxPooling2D(pool_size = n['pool_size'], strides = n['strides'], name = 'pool_{}'.format(i+1)))
     
     # Global Max Pooling Layer to find the most important features
@@ -107,7 +107,7 @@ def create_cnn_classifier_network(
     for i,n in enumerate(dense_layers):
         
         #add dense layer with kernel regularization
-        model.add(Dense(n['units'], activation = 'relu', kernel_regularizer = kernel, name = 'dense_{}'.format(i+1)))
+        model.add(Dense(n['units'], activation = 'elu', kernel_regularizer = kernel, name = 'dense_{}'.format(i+1)))
         
         # Add dropout if exists
         if p_dropout is not None:
