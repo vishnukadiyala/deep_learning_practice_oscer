@@ -40,6 +40,7 @@
 256
 128
 16
---dropout=.35
---spatial_dropout=.35
+--dropout=.5
+--spatial_dropout=.25
+--l2=.001
 --l1=0.0001
