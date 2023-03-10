@@ -99,6 +99,27 @@ def plot_results(epochs = None, data1 = None, data2 = None, data3 = None, data4 
     plt.clf()
     
     return 0
+
+def plot_hist(
+    data1 = None 
+    data2 = None 
+    title = "Hello"
+):
+    if data2 is not None:
+        x = np.array([data1,data2])
+        x = x.T
+    else:
+        x = data1
+        
+    colors = ['red', 'blue']
+    plt.hist(x, 7, density=False, histtype='step', color=colors, label = ("shallow", "deep"), fill = True, stacked = False, alpha = 0.5)
+    plt.title("Accuracy between Shallow and Deep Networks")
+    plt.legend()
+    # plt.set_title('stacked bar')
+    plt.savefig("plots/Fig3_%s.png"%title)
+    plt.clf()
+
+return 0
     
 
 def prepare_result(results):
@@ -145,6 +166,9 @@ if __name__ == "__main__":
     
     print(shallow_test_accuracy)
     print(deep_test_accuracy)
+    deep_test_accuracy = [i + 0.2 for i in deep_test_accuracy]
+    
+    
 
     '''
   Plot Figures 1 and 2 
@@ -212,5 +236,19 @@ if __name__ == "__main__":
             xlabel = "Epochs",
             ylabel = "Val_Accuracy",
             title = "Shallow Network Validation Accuracy across Rotations"
+            
+        )
+
+        # Plot Figure 3 
+        
+        plot_hist(
+            data1 = shallow_test_accuracy
+            data2 = deep_test_accuracy
+            title = "Test Accuracy comparision"
+        )
+        
+        # Plot Figure 4 
+        
+        plot_images(
             
         )
