@@ -45,7 +45,7 @@ def create_parser():
     parser.add_argument('--path', type = str, default = '/home/cs504305/deep_learning_practice/homework/hw3/results',help = 'Provide path to the result file')
     parser.add_argument('--base', type = str, default = 'bmi_*results.pkl', help= 'Provide Filename structure, may use * for wildcard')
     parser.add_argument('--shallow_path', type = str, default = '/home/cs504305/deep_learning_practice/homework/hw3/results/shallow/run2/', help= 'Provide Path to Shallow Network')
-    parser.add_argument('--deep_path', type = str, default = '/home/cs504305/deep_learning_practice/homework/hw3/results/deep/run6/', help= 'Provide path to Deep Network')
+    parser.add_argument('--deep_path', type = str, default = '/home/cs504305/deep_learning_practice/homework/hw3/results/deep/run7/', help= 'Provide path to Deep Network')
     parser.add_argument('--shallow_base', type = str, default = 'image*rot*_results.pkl', help= 'Provide Filename structure for shallow results, may use * for wildcard')
     parser.add_argument('--deep_base', type = str, default = 'image*rot*_results.pkl', help= 'Provide Filename structure for Deep results, may use * for wildcard')
     # Print Figure 1 only
@@ -95,14 +95,14 @@ def plot_results(epochs = None, data1 = None, data2 = None, data3 = None, data4 
         plt.title(title)
 
     plt.savefig("plots/Fig1_%s.png"%title)
-    print("Figure Saved!")
+    print('Figure Saved: %s'%title)
     plt.clf()
     
     return 0
 
 def plot_hist(
-    data1 = None 
-    data2 = None 
+    data1 = None, 
+    data2 = None, 
     title = "Hello"
 ):
     if data2 is not None:
@@ -118,8 +118,8 @@ def plot_hist(
     # plt.set_title('stacked bar')
     plt.savefig("plots/Fig3_%s.png"%title)
     plt.clf()
-
-return 0
+    print('Figure Saved: %s'%title)
+    return 0
     
 
 def prepare_result(results):
@@ -163,11 +163,6 @@ if __name__ == "__main__":
     # Make the results in plottable format
     deep_val_loss, deep_val_accuracy, deep_test_accuracy = prepare_result(deep)
     shallow_val_loss, shallow_val_accuracy, shallow_test_accuracy = prepare_result(shallow)
-    
-    print(shallow_test_accuracy)
-    print(deep_test_accuracy)
-    deep_test_accuracy = [i + 0.2 for i in deep_test_accuracy]
-    
     
 
     '''
@@ -242,13 +237,11 @@ if __name__ == "__main__":
         # Plot Figure 3 
         
         plot_hist(
-            data1 = shallow_test_accuracy
-            data2 = deep_test_accuracy
+            data1 = shallow_test_accuracy,
+            data2 = deep_test_accuracy,
             title = "Test Accuracy comparision"
         )
         
         # Plot Figure 4 
         
-        plot_images(
-            
-        )
+        #plot_images()

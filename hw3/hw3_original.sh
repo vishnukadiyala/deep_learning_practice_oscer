@@ -4,10 +4,10 @@
 #SBATCH --cpus-per-task=10
 # memory in MB
 #SBATCH --mem=15000
-#SBATCH --output=results/deep/run8/hw3_%04a_stdout.txt
-#SBATCH --error=results/deep/run8/hw3_%04a_stderr.txt
+#SBATCH --output=results/deep/run9/hw3_%04a_stdout.txt
+#SBATCH --error=results/deep/run9/hw3_%04a_stderr.txt
 #SBATCH --time=12:00:00
-#SBATCH --job-name=HW3_Run8
+#SBATCH --job-name=HW3_Run9
 #SBATCH --mail-user=vishnupk@ou.edu
 #SBATCH --mail-type=ALL
 #SBATCH --chdir=/home/cs504305/deep_learning_practice/homework/hw3
