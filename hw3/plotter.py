@@ -45,7 +45,7 @@ def create_parser():
     parser.add_argument('--path', type = str, default = '/home/cs504305/deep_learning_practice/homework/hw3/results',help = 'Provide path to the result file')
     parser.add_argument('--base', type = str, default = 'bmi_*results.pkl', help= 'Provide Filename structure, may use * for wildcard')
     parser.add_argument('--shallow_path', type = str, default = '/home/cs504305/deep_learning_practice/homework/hw3/results/shallow/run2/', help= 'Provide Path to Shallow Network')
-    parser.add_argument('--deep_path', type = str, default = '/home/cs504305/deep_learning_practice/homework/hw3/results/deep/run7/', help= 'Provide path to Deep Network')
+    parser.add_argument('--deep_path', type = str, default = '/home/cs504305/deep_learning_practice/homework/hw3/results/deep/run9/', help= 'Provide path to Deep Network')
     parser.add_argument('--shallow_base', type = str, default = 'image*rot*_results.pkl', help= 'Provide Filename structure for shallow results, may use * for wildcard')
     parser.add_argument('--deep_base', type = str, default = 'image*rot*_results.pkl', help= 'Provide Filename structure for Deep results, may use * for wildcard')
     # Print Figure 1 only
