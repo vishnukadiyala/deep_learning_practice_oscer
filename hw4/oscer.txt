@@ -1,0 +1,2 @@
+--cpus_per_task=10
+--dataset=/home/fagg/datasets/core50/core50_128x128
