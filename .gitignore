@@ -26,3 +26,5 @@ hw3/test_ds
 hw4/test_ds
 hw4/core50_df.pkl
 hw3/core50_df.pkl
+*.pkl
+*.pyc 
