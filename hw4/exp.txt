@@ -1,7 +1,7 @@
 --Ntraining=3
 --epochs=1000
 --patience=50
---batch=2048
+--batch=128
 --shuffle=200
 --monitor=val_sparse_categorical_accuracy
 --padding=valid
