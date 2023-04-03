@@ -7,6 +7,5 @@
 --steps_per_epoch=100
 --monitor=val_sparse_categorical_accuracy
 --padding=valid
---save_model
---results_path=results/shallow/run1
+--results_path=results/srnn/run1
 -vv

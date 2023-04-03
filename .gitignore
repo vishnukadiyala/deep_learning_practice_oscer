@@ -8,6 +8,7 @@ hw1/results
 hw2/results
 hw3/results
 hw4/results
+hw5/results
 homework/hw0/__pycache__
 homework/hw1/__pycache__
 homework/hw2/__pycache__
@@ -18,6 +19,7 @@ hw1/__pycache__
 hw2/__pycache__
 hw3/__pycache__
 hw4/__pycache__
+hw5/__pycache__
 homework/hw4/test_ds
 homework/hw3/test_ds
 homework/hw4/core50_df.pkl

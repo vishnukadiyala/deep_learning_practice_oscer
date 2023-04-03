@@ -99,7 +99,7 @@ def create_parser():
     parser.add_argument('--exp_type', type=str, default=None, help="Experiment type")
     
     parser.add_argument('--label', type=str, default=None, help="Extra label to add to output files");
-    parser.add_argument('--dataset', type=str, default='/Users/vishnu/Library/Mobile Documents/com~apple~CloudDocs/Alienware/AML/deep_learning_practice_oscer/hw4', help='Data set directory')
+    parser.add_argument('--dataset', type=str, default='/home/fagg/datasets/pfam', help='Data set directory')
     parser.add_argument('--image_size', nargs=3, type=int, default=[3934], help="Size of input images (rows, cols, channels)")
     parser.add_argument('--meta_dataset', type=str, default='core50_df.pkl', help='Name of file containing the core 50 metadata')
     parser.add_argument('--Nfolds', type=int, default=5, help='Maximum number of folds')
@@ -508,7 +508,7 @@ def execute_exp(args=None, multi_gpus=False):
     # ds_train, ds_validation, ds_testing, n_classes = load_data_set_by_folds(args, objects = list(range(10)))
     
     #HW5 
-    data_out = load_rotation(rotation=args.rotation)
+    data_out = load_rotation(basedir = args.dataset, rotation=args.rotation)
     
     ds_train, ds_validation, ds_testing = create_tf_datasets(data_out, batch=args.batch, prefetch=args.prefetch, repeat=args.repeat, shuffle=args.shuffle)
     n_classes = data_out['n_classes']

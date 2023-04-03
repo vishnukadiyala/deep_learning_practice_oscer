@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --partition=debug_5min
+#SBATCH --partition=normal
 #SBATCH --cpus-per-task=10
 # memory in MB
-#SBATCH --mem=10000
+#SBATCH --mem=15000
 #SBATCH --output=results/srnn/run1/hw5_%04a_stdout.txt
 #SBATCH --error=results/srnn/run1/hw5_%04a_stderr.txt
-#SBATCH --time=00:05:00
+#SBATCH --time=48:00:00
 #SBATCH --job-name=hw5_SRNN
 #SBATCH --mail-user=vishnupk@ou.edu
 #SBATCH --mail-type=ALL
