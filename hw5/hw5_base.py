@@ -1,36 +1,11 @@
 '''
 Advanced Machine Learning, 2023
-HW 3 Base Code
+HW 5 Base Code
 
 Author: Andrew H. Fagg (andrewhfagg@gmail.com)
+Editor: Vishnu Kadiyala (vishnupk@ou.edu) 
 
-Image classification for the Core 50 data set
-
-Updates for using caching and GPUs
-- Batch file:
-#SBATCH --exclusive
-#SBATCH --partition=gpu
-
-- Command line options to include
---cache $LSCRATCH 
---batch 4096      (this parameter is per GPU)
-
-Notes: 
-- batch is now a parameter per GPU.  If there are two GPUs, then this number is doubled internally
-- 4096 works on the a100 GPUs
-
-Caching:
-load_data_set_by_folds() is a drop-in replacement for load_data_set() that organizes the cached
-data by folds instead of by training/validation/testin data sets.  This allows us to copy 
-the cache files from pre-existing ones.  This copy operation is *a lot* faster (x10) than populating
-the caches one image at a time.  To use this feature, use this load function and add the following 
-line to your batch file just ahead of starting python:
-
-cp /home/fagg/datasets/core50/cache/cache_core50_objects_10_fold* $LSCRATCH
-
-Note that the cache files I have left there are for the 10-object case (not the 4-object), so is 
-appropriate for HW4 (though it might work for the HW3 problem, too).
-
+Image classification for the pfamB dataset
 
 '''
 
@@ -55,7 +30,8 @@ sys.path.append(tf_tools + "networks")
 # Provided
 from symbiotic_metrics import *
 from job_control import *
-from core50 import *
+# from core50 import *
+from pfam_loader import *
 
 # You need to provide this yourself
 from cnn_classifier import *
@@ -124,7 +100,7 @@ def create_parser():
     
     parser.add_argument('--label', type=str, default=None, help="Extra label to add to output files");
     parser.add_argument('--dataset', type=str, default='/Users/vishnu/Library/Mobile Documents/com~apple~CloudDocs/Alienware/AML/deep_learning_practice_oscer/hw4', help='Data set directory')
-    parser.add_argument('--image_size', nargs=3, type=int, default=[128,128,3], help="Size of input images (rows, cols, channels)")
+    parser.add_argument('--image_size', nargs=3, type=int, default=[3934], help="Size of input images (rows, cols, channels)")
     parser.add_argument('--meta_dataset', type=str, default='core50_df.pkl', help='Name of file containing the core 50 metadata')
     parser.add_argument('--Nfolds', type=int, default=5, help='Maximum number of folds')
     parser.add_argument('--results_path', type=str, default='./results', help='Results directory')
@@ -529,12 +505,22 @@ def execute_exp(args=None, multi_gpus=False):
     # HW3
     #ds_train, ds_validation, ds_testing, n_classes = load_data_set(args)
     # HW4
-    ds_train, ds_validation, ds_testing, n_classes = load_data_set_by_folds(args, objects = list(range(10)))
+    # ds_train, ds_validation, ds_testing, n_classes = load_data_set_by_folds(args, objects = list(range(10)))
+    
+    #HW5 
+    data_out = load_rotation(rotation=args.rotation)
+    
+    ds_train, ds_validation, ds_testing = create_tf_datasets(data_out, batch=args.batch, prefetch=args.prefetch, repeat=args.repeat, shuffle=args.shuffle)
+    n_classes = data_out['n_classes']
+    
+    print(data_out['n_classes'])
+    print(data_out['n_tokens'])
+    print(data_out['len_max'])
 
     ####################################################
     # Build the model
-    image_size=args.image_size[0:2]
-    nchannels = args.image_size[2]
+    # image_size=args.image_size[0:2]
+    # nchannels = args.image_size[2]
 
     # Network config
     # NOTE: this is very specific to our implementation of create_cnn_classifier_network()
@@ -556,12 +542,11 @@ def execute_exp(args=None, multi_gpus=False):
         with mirrored_strategy.scope():
 
             # Build network: you must provide your own implementation
-            model = create_cnn_classifier_network(image_size,
-                                          nchannels,
+            model = create_srnn_classifier_network(data_size=data_out['len_max'],
                                           conv_layers=conv_layers,
                                           dense_layers=dense_layers,
                                           p_dropout=args.dropout,
-                                          p_spatial_dropout=args.spatial_dropout,
+                                          #p_spatial_dropout=args.spatial_dropout,
                                           lambda_l2=args.L2_regularization,
                                           lambda_l1=args.L1_regularization,
                                           lrate=args.lrate, n_classes=n_classes,
@@ -571,12 +556,11 @@ def execute_exp(args=None, multi_gpus=False):
                                           flatten=False,
                                           args=args)
     else:
-            model = create_cnn_classifier_network(image_size,
-                                          nchannels,
+            model = create_srnn_classifier_network(data_size=data_out['len_max'],
                                           conv_layers=conv_layers,
                                           dense_layers=dense_layers,
                                           p_dropout=args.dropout,
-                                          p_spatial_dropout=args.spatial_dropout,
+                                          # p_spatial_dropout=args.spatial_dropout,
                                           lambda_l2=args.L2_regularization,
                                           lambda_l1=args.L1_regularization,
                                           lrate=args.lrate, n_classes=n_classes,
@@ -589,7 +573,8 @@ def execute_exp(args=None, multi_gpus=False):
     
     # Report model structure if verbosity is turned on
     if args.verbose >= 1:
-        print(model.summary())
+        #print(model.summary())
+        print("Model")
 
     print(args)
 

@@ -177,7 +177,7 @@ def save_data_sets(basedir = '/home/fagg/datasets/pfam', out_basedir = None, nfo
         with open(fname, 'wb') as fp:
             pickle.dump(dat, fp)
             
-def load_rotation(basedir = '/home/fagg/datasets/pfam', rotation=0, version=''):
+def load_rotation(basedir = '/Users/vishnu/Documents/AML/pfam', rotation=0, version='B'):
     '''
     Load a single rotation from a pickle file.  These rotations are 5 folds, 3 training folds
 

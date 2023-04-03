@@ -2,8 +2,9 @@
 --epochs=1000
 --patience=50
 --batch=128
---shuffle=200
+--shuffle=100
 --repeat
+--steps_per_epoch=100
 --monitor=val_sparse_categorical_accuracy
 --padding=valid
 --save_model
