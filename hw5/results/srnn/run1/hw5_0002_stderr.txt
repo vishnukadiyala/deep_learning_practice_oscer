@@ -1,0 +1,25 @@
+2023-04-03 18:08:28.278179: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE4.1 SSE4.2 AVX AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+usage: hw5_base.py [-h] [--check] [--nogo] [--verbose]
+                   [--cpus_per_task CPUS_PER_TASK] [--gpu] [--no-gpu]
+                   [--exp_type EXP_TYPE] [--label LABEL] [--dataset DATASET]
+                   [--image_size IMAGE_SIZE IMAGE_SIZE IMAGE_SIZE]
+                   [--meta_dataset META_DATASET] [--Nfolds NFOLDS]
+                   [--results_path RESULTS_PATH] [--exp_index EXP_INDEX]
+                   [--rotation ROTATION] [--epochs EPOCHS]
+                   [--Ntraining NTRAINING] [--lrate LRATE]
+                   [--conv_size CONV_SIZE [CONV_SIZE ...]]
+                   [--conv_nfilters CONV_NFILTERS [CONV_NFILTERS ...]]
+                   [--pool POOL [POOL ...]] [--padding PADDING]
+                   [--hidden HIDDEN [HIDDEN ...]] [--dropout DROPOUT]
+                   [--spatial_dropout SPATIAL_DROPOUT]
+                   [--L1_regularization L1_REGULARIZATION]
+                   [--L2_regularization L2_REGULARIZATION]
+                   [--min_delta MIN_DELTA] [--patience PATIENCE]
+                   [--monitor MONITOR] [--batch BATCH] [--prefetch PREFETCH]
+                   [--num_parallel_calls NUM_PARALLEL_CALLS] [--cache CACHE]
+                   [--shuffle SHUFFLE] [--generator_seed GENERATOR_SEED]
+                   [--repeat] [--steps_per_epoch STEPS_PER_EPOCH]
+                   [--save_model] [--no-save_model]
+hw5_base.py: error: [Errno 2] No such file or directory: 'oscer.txt'
+slurmstepd: error: acct_gather_profile/influxdb _send_data: curl_easy_perform failed to send data (discarded). Reason: Couldn't resolve host name
