@@ -5,7 +5,7 @@ HW 5 Base Code
 Author: Andrew H. Fagg (andrewhfagg@gmail.com)
 Editor: Vishnu Kadiyala (vishnupk@ou.edu) 
 
-Protien prediction for the pfamB dataset
+Image classification for the pfamB dataset
 
 '''
 
@@ -513,6 +513,10 @@ def execute_exp(args=None, multi_gpus=False):
     ds_train, ds_validation, ds_testing = create_tf_datasets(data_out, batch=args.batch, prefetch=args.prefetch, repeat=args.repeat, shuffle=args.shuffle)
     n_classes = data_out['n_classes']
     
+    print(data_out['n_classes'])
+    print(data_out['n_tokens'])
+    print(data_out['len_max'])
+
     ####################################################
     # Build the model
     # image_size=args.image_size[0:2]
@@ -552,7 +556,7 @@ def execute_exp(args=None, multi_gpus=False):
                                           flatten=False,
                                           args=args)
     else:
-            model = create_srnn_classifier_network(data_size=int(data_out['len_max']),
+            model = create_srnn_classifier_network(data_size=data_out['len_max'],
                                           conv_layers=conv_layers,
                                           dense_layers=dense_layers,
                                           p_dropout=args.dropout,

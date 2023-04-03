@@ -15,6 +15,7 @@ from tensorflow.keras.losses import sparse_categorical_crossentropy
 from keras.layers import GlobalMaxPooling2D
 from keras.layers import SpatialDropout2D
 from keras.layers import InputLayer
+from keras.layers import Embedding
 from keras import Input
 from keras.layers import Concatenate
 from keras import Model
@@ -94,15 +95,18 @@ def create_srnn_classifier_network(
     ''' 
     Model Building Part 
     '''
-    input_tensor = Input(shape=(1, data_size,))
+    input_tensor = Input(shape=(None,))
     
-    output_tensor = SimpleRNN(units = data_size,
+    embedding_tensor = Embedding(input_dim = data_size, output_dim = int (data_size/2))(input_tensor)
+    
+    rnn_tensor = SimpleRNN(units = int(data_size/2),
                               activation='tanh',
                               dropout=p_dropout,
                               kernel_regularizer=kernel,
                               unroll=False,
-                              )(input_tensor)
+                              )(embedding_tensor)
     
+    output_tensor = Dense(n_classes, activation='softmax')(rnn_tensor)
     '''
     #Add optimizer to the model and compile the model
     
@@ -122,7 +126,7 @@ def create_srnn_classifier_network(
         metrics=metrics
                   )
     
-    return output_tensor
+    return model
 
 
 
