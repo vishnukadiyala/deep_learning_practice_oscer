@@ -111,6 +111,7 @@ def create_parser():
     parser.add_argument('--epochs', type=int, default=100, help='Training epochs')
     parser.add_argument('--Ntraining', type=int, default=3, help='Number of training folds')
     parser.add_argument('--lrate', type=float, default=0.001, help="Learning rate")
+    # parser.add_argument('--unroll', action='store_true', help="Unroll the data")
 
     # Convolutional parameters
     parser.add_argument('--conv_size', nargs='+', type=int, default=[3,5], help='Convolution filter size per layer (sequence of ints)')

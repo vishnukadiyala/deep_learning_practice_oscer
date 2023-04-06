@@ -1,11 +1,11 @@
 --Ntraining=3
 --epochs=1000
---patience=50
---batch=128
+--patience=10
+--batch=32
 --shuffle=100
 --repeat
---steps_per_epoch=100
+--steps_per_epoch=10
 --monitor=val_sparse_categorical_accuracy
 --padding=valid
---results_path=results/srnn/run1
+--results_path=results/srnn/run2
 -vv

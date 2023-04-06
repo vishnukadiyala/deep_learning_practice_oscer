@@ -95,15 +95,15 @@ def create_srnn_classifier_network(
     ''' 
     Model Building Part 
     '''
-    input_tensor = Input(shape=(None,))
+    input_tensor = Input(input_length = data_size)
     
     embedding_tensor = Embedding(input_dim = data_size, output_dim = int (data_size/2))(input_tensor)
     
-    rnn_tensor = SimpleRNN(units = int(data_size/2),
+    rnn_tensor = SimpleRNN(units = 100,
                               activation='tanh',
                               dropout=p_dropout,
                               kernel_regularizer=kernel,
-                              unroll=False,
+                              unroll=args.gpu,
                               )(embedding_tensor)
     
     output_tensor = Dense(n_classes, activation='softmax')(rnn_tensor)
