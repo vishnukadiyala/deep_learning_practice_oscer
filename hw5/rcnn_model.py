@@ -54,6 +54,7 @@ def create_srnn_classifier_network(
     
     model.add(Embedding(n_tokens, n_embeddings, input_length = len_max))
     
+    # Add RNN layers 
     
     for i,n in enumerate(n_rnn[:-1]):
         
@@ -107,7 +108,6 @@ def create_srnn_classifier_network(
     #Add optimizer to the model and compile the model
     
     Optimizer used is Adam optimizer with learning rate from args or default value
-    beta1 =0.9, beta2 = 0.999, epsilon = None, decay = 0.0, amsgrad = False
     
     for the model compile part we use the loss and metrics from args or default values
     '''
@@ -115,6 +115,7 @@ def create_srnn_classifier_network(
     # model = Model(inputs = input_tensor, outputs = output_tensor)
     # Add optimizer to the model 
     opt = tf.keras.optimizers.Adam(learning_rate=lrate, amsgrad=False)
+    
     # Compile model
     model.compile(
         optimizer=opt,

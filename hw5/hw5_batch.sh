@@ -3,8 +3,8 @@
 #SBATCH --cpus-per-task=10
 # memory in MB
 #SBATCH --mem=15000
-#SBATCH --output=results/srnn/run4/hw5_%04a_stdout.txt
-#SBATCH --error=results/srnn/run4/hw5_%04a_stderr.txt
+#SBATCH --output=results/srnn/run1/hw5_%04a_stdout.txt
+#SBATCH --error=results/srnn/run1/hw5_%04a_stderr.txt
 #SBATCH --time=48:00:00
 #SBATCH --job-name=hw5_SRNN
 #SBATCH --mail-user=vishnupk@ou.edu

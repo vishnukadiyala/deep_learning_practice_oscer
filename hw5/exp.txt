@@ -1,10 +1,10 @@
 --Ntraining=3
 --epochs=1000
---patience=10
+--patience=100
 --batch=64
 --shuffle=100
 --repeat
 --steps_per_epoch=100
 --monitor=val_sparse_categorical_accuracy
---results_path=results/srnn/run4
+--results_path=results/srnn/run1
 -vv

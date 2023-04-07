@@ -111,6 +111,7 @@ def create_parser():
     parser.add_argument('--epochs', type=int, default=100, help='Training epochs')
     parser.add_argument('--Ntraining', type=int, default=3, help='Number of training folds')
     parser.add_argument('--lrate', type=float, default=0.001, help="Learning rate")
+    parser.add_argument('--model', type=str, default='rnn', help="What model to use")
     # parser.add_argument('--unroll', action='store_true', help="Unroll the data")
 
     # Convolutional parameters
@@ -132,6 +133,11 @@ def create_parser():
     parser.add_argument('--spatial_dropout', type=float, default=None, help='Dropout rate for convolutional layers')
     parser.add_argument('--L1_regularization', '--l1', type=float, default=None, help="L1 regularization parameter")
     parser.add_argument('--L2_regularization', '--l2', type=float, default=None, help="L2 regularization parameter")
+    
+    #Activation parameters
+    parser.add_argument('--activation_dense', type=str, default='elu', help="Activation function for dense layers")
+    parser.add_argument('--activation_rnn', type=str, default='tanh', help="Activation function for RNN layers")
+    parser.add_argument('--activation_out', type=str, default='softmax', help="Activation function for output layer")
 
     # Early stopping
     parser.add_argument('--min_delta', type=float, default=0.0, help="Minimum delta for early termination")
@@ -403,33 +409,45 @@ def execute_exp(args=None, multi_gpus=False):
 
         with mirrored_strategy.scope():
 
+            if args.model == 'rnn':
             # Build network: you must provide your own implementation
-            model = create_srnn_classifier_network(n_tokens = n_tokens,
-                                          len_max = len_max,
-                                          n_embeddings = args.embeddings,
-                                          n_rnn = args.n_rnn,
-                                          activation = 'tanh',
-                                          hidden = args.hidden,
-                                          activation_hidden = 'elu',
-                                          n_outputs = n_classes,
-                                          activation_output = 'softmax',
-                                          dropout = args.dropout,
-                                          recurrent_dropout = args.recurrent_dropout,
-                                          lrate = args.lrate,
-                                          lamda_regularization = kernel,
-                                          binding_threshold = 0.42,
-                                          loss = 'sparse_categorical_crossentropy',
-                                          metrics = ['sparse_categorical_accuracy'],)
+                model = create_srnn_classifier_network(n_tokens = n_tokens,
+                                            len_max = len_max,
+                                            n_embeddings = args.embeddings,
+                                            n_rnn = args.n_rnn,
+                                            activation = args.activation_rnn,
+                                            hidden = args.hidden,
+                                            activation_hidden = args.activation_dense,
+                                            n_outputs = n_classes,
+                                            activation_output = args.activation_out,
+                                            dropout = args.dropout,
+                                            recurrent_dropout = args.recurrent_dropout,
+                                            lrate = args.lrate,
+                                            lamda_regularization = kernel,
+                                            binding_threshold = 0.42,
+                                            loss = 'sparse_categorical_crossentropy',
+                                            metrics = ['sparse_categorical_accuracy'],)
+            elif args.model == 'cnn':
+                pass 
+            
+            elif args.model == 'rnn_pooling':
+                pass
+            
+            else: 
+                print("Model is not defined")
+                exit()
+            
     else:
+        if args.model == 'rnn':
             model = create_srnn_classifier_network(n_tokens = n_tokens,
                                           len_max = len_max,
                                           n_embeddings = args.embeddings,
                                           n_rnn = args.n_rnn,
-                                          activation = 'tanh',
+                                          activation = args.activation_rnn,
                                           hidden = args.hidden,
-                                          activation_hidden = 'elu',
+                                          activation_hidden = args.activation_dense,
                                           n_outputs = n_classes,
-                                          activation_output = 'softmax',
+                                          activation_output = args.activation_out,
                                           dropout = args.dropout,
                                           recurrent_dropout = args.recurrent_dropout,
                                           lrate = args.lrate,
@@ -438,7 +456,15 @@ def execute_exp(args=None, multi_gpus=False):
                                           loss = 'sparse_categorical_crossentropy',
                                           metrics = ['sparse_categorical_accuracy'],
                                           )
-    
+        elif args.model == 'cnn':
+            pass
+        
+        elif args.model == 'rnn_pooling':
+            pass
+        
+        else: 
+            print("Model is not defined")
+            exit() 
     # Report model structure if verbosity is turned on
     if args.verbose >= 1:
         print(model.summary())
