@@ -95,18 +95,38 @@ def create_srnn_classifier_network(
     ''' 
     Model Building Part 
     '''
-    input_tensor = Input(input_length = data_size)
+    model = Sequential()
     
-    embedding_tensor = Embedding(input_dim = data_size, output_dim = int (data_size/2))(input_tensor)
-    
-    rnn_tensor = SimpleRNN(units = 100,
+    model.add(InputLayer(input_shape=(data_size,)))
+    model.add(Embedding(input_dim = data_size, output_dim = int (data_size/2)))
+    model.add(SimpleRNN(units = 100,
                               activation='tanh',
                               dropout=p_dropout,
                               kernel_regularizer=kernel,
                               unroll=args.gpu,
-                              )(embedding_tensor)
+                              ))
+    model.add(SimpleRNN(units = 100,
+                              activation='tanh',
+                              dropout=p_dropout,
+                              kernel_regularizer=kernel,
+                              unroll=args.gpu,
+                              ))
     
-    output_tensor = Dense(n_classes, activation='softmax')(rnn_tensor)
+    model.add(Dense(100, activation='elu'))
+    model.add(Dense(n_classes, activation='softmax'))
+    
+    # input_tensor = Input(input_length = data_size)
+    
+    # embedding_tensor = Embedding(input_dim = data_size, output_dim = int (data_size/2))(input_tensor)
+    
+    # rnn_tensor = SimpleRNN(units = 100,
+    #                           activation='tanh',
+    #                           dropout=p_dropout,
+    #                           kernel_regularizer=kernel,
+    #                           unroll=args.gpu,
+    #                           )(embedding_tensor)
+    
+    # output_tensor = Dense(n_classes, activation='softmax')(rnn_tensor)
     '''
     #Add optimizer to the model and compile the model
     
@@ -116,7 +136,7 @@ def create_srnn_classifier_network(
     for the model compile part we use the loss and metrics from args or default values
     '''
     # Create model
-    model = Model(inputs = input_tensor, outputs = output_tensor)
+    # model = Model(inputs = input_tensor, outputs = output_tensor)
     # Add optimizer to the model 
     opt = tf.keras.optimizers.Adam(learning_rate=args.lrate, beta_1=0.9, beta_2=0.999, amsgrad=False)
     # Compile model

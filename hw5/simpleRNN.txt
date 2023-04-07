@@ -1,0 +1,11 @@
+--n_rnn
+500
+250
+--hidden
+350
+350
+--dropout=.25
+--recurrent_dropout=.25
+--l2=.001
+--lrate=.001
+--embeddings=50

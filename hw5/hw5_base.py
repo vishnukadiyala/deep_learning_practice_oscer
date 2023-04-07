@@ -34,7 +34,7 @@ from job_control import *
 from pfam_loader import *
 
 # You need to provide this yourself
-from cnn_classifier import *
+from rcnn_model import *
 import matplotlib.pyplot as plt
 #################################################################
 # Default plotting parameters
@@ -116,14 +116,19 @@ def create_parser():
     # Convolutional parameters
     parser.add_argument('--conv_size', nargs='+', type=int, default=[3,5], help='Convolution filter size per layer (sequence of ints)')
     parser.add_argument('--conv_nfilters', nargs='+', type=int, default=[10,15], help='Convolution filters per layer (sequence of ints)')
+    parser.add_argument('--n_rnn', nargs='+', type=int, default=[3,5], help='RNN size per layer (sequence of ints)')
+     # parser.add_argument('--conv_nfilters', nargs='+', type=int, default=[10,15], help='Convolution filters per layer (sequence of ints)')
     parser.add_argument('--pool', nargs='+', type=int, default=[2,2], help='Max pooling size (1=None)')
     parser.add_argument('--padding', type=str, default='valid', help='Padding type for convolutional layers')
 
+    # Ebedding parameters
+    parser.add_argument('--embeddings', type=int, default=25, help='Number of Embeddings')
+
     # Hidden unit parameters
     parser.add_argument('--hidden', nargs='+', type=int, default=[100, 5], help='Number of hidden units per layer (sequence of ints)')
-
     # Regularization parameters
     parser.add_argument('--dropout', type=float, default=None, help='Dropout rate')
+    parser.add_argument('--recurrent_dropout', type=float, default=None, help='Dropout rate for recurrent layers')
     parser.add_argument('--spatial_dropout', type=float, default=None, help='Dropout rate for convolutional layers')
     parser.add_argument('--L1_regularization', '--l1', type=float, default=None, help="L1 regularization parameter")
     parser.add_argument('--L2_regularization', '--l2', type=float, default=None, help="L2 regularization parameter")
@@ -299,184 +304,36 @@ def generate_fname(args, params_str):
                                                                                            args.rotation)
 
 #################################################################
-def load_data_set(args, objects=[4,5,6,8]):
+
+def build_regularization_kernel(lambda_l1, lambda_l2):
     '''
-    Create the data set from the arguments.
-
-    The Core 50 data set has:
-    - 10 object classes
-    - 5 object instances per class
-    - 11 background conditions in which each of the object instances are imaged in
+    This part is used to update kernel with regularization if regularization exists
+    so that we can add the regularization to the model 
     
-
-    The specific arrangement of operations defines the particular problem that we are solving.
-    Specifically:
-    - All 5 object instances occur in each fold
-    - Folds are defined as pairs of background conditions (a total of 5 folds)
-
-    So, we are learning a model that can distinguish between *these* specific object instances, but
-    under arbitrary background conditions
-
-    
-    :param args: Command line arguments
-    :param objects: List of objects to include in the training/evaluation process (integers 0...9)
-    
-    :return: TF Datasets for the training, validation and testing sets + number of classes
+    I checked if kernel = None, then no regularization exists and we can add the model without regularization
+    This had no issues with the model. Hence, proceeded with the model building.
     '''
-
-    # Test create object-based rotations
-    core = Core50(args.meta_dataset)
-
-    # Set the problem class IDs
-    # Object 4->C0; Object 5->C1; Object 6->C2; Object 8->C3;
-    #   ignore all other objects
-
-    core.set_problem_class_by_equality('class', objects)
-
-    # Select only these object classes (remove all others)
-    core.filter_problem_class()
-
-    # Folds by pairs of condition ((1,2), (3,4), ...)
-    folds = core.create_subsets_by_membership('condition', list(zip(range(1,11,2),range(2,11,2))))
-
-    # Check to make sure that argument matches that actual number of folds
-    assert len(folds) == args.Nfolds, "args.Nfolds does not match actual number of folds"
-
-    # Create training/validation/test DFs
-    df_training, df_validation, df_testing = core.create_training_validation_testing(args.rotation,
-                                                                                     folds,
-                                                                                     args.Ntraining)
-
-    print("Training set has %d samples"%(len(df_training.index)))
-    print("Validation set has %d samples"%(len(df_validation.index)))
-    if df_testing is None:
-        print("Testing set has NO samples")
-    else:
-        print("Testing set has %d samples"%(len(df_testing.index)))
-    
-    # Create the corresponding Datasets
-    ds_training = core.create_dataset(df_training, args.dataset,
-                                      column_file='fname',
-                                      column_label='problem_class',
-                                      batch_size=args.batch,
-                                      prefetch=args.prefetch,
-                                      num_parallel_calls=args.num_parallel_calls,
-                                      cache=args.cache,
-                                      repeat=args.repeat,
-                                      shuffle=args.shuffle,
-                                      dataset_name='train')
-
-    ds_validation = core.create_dataset(df_validation, args.dataset,
-                                      column_file='fname',
-                                      column_label='problem_class',
-                                      batch_size=args.batch,
-                                      prefetch=args.prefetch,
-                                      num_parallel_calls=args.num_parallel_calls,
-                                      cache=args.cache,
-                                      repeat=False,
-                                      shuffle=0,
-                                      dataset_name='valid')
-
-    if df_testing is None:
-        ds_testing = None
-    else:
-        ds_testing = core.create_dataset(df_testing, args.dataset,
-                                      column_file='fname',
-                                      column_label='problem_class',
-                                      batch_size=args.batch,
-                                      prefetch=args.prefetch,
-                                      num_parallel_calls=args.num_parallel_calls,
-                                      cache=args.cache,
-                                      repeat=False,
-                                      shuffle=0,
-                                      dataset_name='test')
+    # Check if regularization exists, then update kernel with regularization
+    #if either lambda_l2 or lambda_l1 exists, then uodate kernel with regularization:
+    if (lambda_l2 is not None) or (lambda_l1 is not None):
+        
+        #if both lambda_l2 and lambda_l1 exist, then update kernel with l1_l2 regularization:
+        if (lambda_l2 is not None) and (lambda_l1 is not None):
+            kernel = tf.keras.regularizers.l1_l2(lambda_l1, lambda_l2)
+        else:
+            #if only lambda_l1 exists, then update kernel with l1 regularization:
+            if lambda_l1 is not None:
+                kernel = tf.keras.regularizers.l1(lambda_l1)
             
-    return ds_training, ds_validation, ds_testing, len(objects)
-
-
-
-#################################################################
-def load_data_set_by_folds(args, objects=[4,5,6,8], seed=42):
-    '''
-    Create the data set from the arguments.
-
-    The underlying caching is done by fold (as opposed to data set)
-
-    The Core 50 data set has:
-    - 10 object classes
-    - 5 object instances per class
-    - 11 background conditions in which each of the object instances are imaged in
+            #if only lambda_l2 exists, then update kernel with l2 regularization:
+            if lambda_l2 is not None:
+                kernel = tf.keras.regularizers.l2(lambda_l2)
+    #set kernel to None if no regularization exists
+    else:
+        kernel = None
     
-
-    The specific arrangement of operations defines the particular problem that we are solving.
-    Specifically:
-    - All 5 object instances occur in each fold
-    - Folds are defined as pairs of background conditions (a total of 5 folds)
-
-    So, we are learning a model that can distinguish between *these* specific object instances, but
-    under arbitrary background conditions
-
     
-    :param args: Command line arguments
-    :param objects: List of objects to include in the training/evaluation process (integers 0...9)
-    
-    :return: TF Datasets for the training, validation and testing sets + number of classes
-    '''
-
-    # Test create object-based rotations
-    core = Core50(args.meta_dataset)
-
-    # Set the problem class IDs
-    # Object 4->C0; Object 5->C1; Object 6->C2; Object 8->C3;
-    #   ignore all other objects
-
-    core.set_problem_class_by_equality('class', objects)
-
-    # Select only these object classes (remove all others)
-    core.filter_problem_class()
-
-    # Folds by pairs of condition ((1,2), (3,4), ...)
-    folds = core.create_subsets_by_membership('condition', list(zip(range(1,11,2),range(2,11,2))))
-
-    # Shuffle the rows in each of the dataframes
-    folds = [df.sample(frac=1, random_state=seed) for df in folds]
-
-    # Check to make sure that argument matches that actual number of folds
-    assert len(folds) == args.Nfolds, "args.Nfolds does not match actual number of folds"
-
-    # Create the fold-wise data sets
-    ds_folds = []
-    for i, f in enumerate(folds):
-        # Create the corresponding Datasets: only up to caching
-        ds = core.create_dataset(f, args.dataset,
-                                 column_file='fname',
-                                 column_label='problem_class',
-                                 batch_size=1,
-                                 prefetch=0,
-                                 num_parallel_calls=args.num_parallel_calls,
-                                 cache=args.cache,
-                                 repeat=False,
-                                 shuffle=0,
-                                 dataset_name='core50_objects_10_fold_%d'%i)
-        ds_folds.append(ds)
-
-
-    # Create training/validation/test DFs
-    # This step does the batching/prefetching/repeating/shuffling
-    ds_training, ds_validation, ds_testing = core.create_training_validation_testing_from_datasets(args.rotation,
-                                                                                                   ds_folds,
-                                                                                                   args.Ntraining,
-                                                                                                   batch_size=args.batch,
-                                                                                                   prefetch=args.prefetch,
-                                                                                                   repeat=args.repeat,
-                                                                                                   shuffle=args.shuffle)
-
-    # Done
-    return ds_training, ds_validation, ds_testing, len(objects)
-
-
-
-    
+    return kernel 
 #################################################################
 def execute_exp(args=None, multi_gpus=False):
     '''
@@ -510,14 +367,18 @@ def execute_exp(args=None, multi_gpus=False):
     
     #HW5 
     data_out = load_rotation(basedir = args.dataset, rotation=args.rotation)
-    
     ds_train, ds_validation, ds_testing = create_tf_datasets(data_out, batch=args.batch, prefetch=args.prefetch, repeat=args.repeat, shuffle=args.shuffle)
     n_classes = data_out['n_classes']
+    len_max = data_out['len_max']
+    rotation = data_out['rotation']
+    n_tokens = data_out['n_tokens']
+    print(n_tokens)
+    print(len_max)
+    print(n_classes)
+    # exit()
     
     ####################################################
-    # Build the model
-    # image_size=args.image_size[0:2]
-    # nchannels = args.image_size[2]
+  
 
     # Network config
     # NOTE: this is very specific to our implementation of create_cnn_classifier_network()
@@ -529,9 +390,13 @@ def execute_exp(args=None, multi_gpus=False):
                    else {'filters': f, 'kernel_size': (s,s), 'pool_size': None, 'strides': None}
                    for s, f, p, in zip(args.conv_size, args.conv_nfilters, args.pool)]
     
+    rnn_layers = [{'n_rnn': i} for i in args.n_rnn]
+    
     print("Dense layers:", dense_layers)
     print("Conv layers:", conv_layers)
+    print("RNN layers:", rnn_layers)
 
+    kernel = build_regularization_kernel(args.L1_regularization, args.L2_regularization)
 
     if multi_gpus > 1:
         mirrored_strategy = tf.distribute.MirroredStrategy()
@@ -539,34 +404,40 @@ def execute_exp(args=None, multi_gpus=False):
         with mirrored_strategy.scope():
 
             # Build network: you must provide your own implementation
-            model = create_srnn_classifier_network(data_size=data_out['len_max'],
-                                          conv_layers=conv_layers,
-                                          dense_layers=dense_layers,
-                                          p_dropout=args.dropout,
-                                          #p_spatial_dropout=args.spatial_dropout,
-                                          lambda_l2=args.L2_regularization,
-                                          lambda_l1=args.L1_regularization,
-                                          lrate=args.lrate, n_classes=n_classes,
-                                          loss='sparse_categorical_crossentropy',
-                                          metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
-                                          padding=args.padding,
-                                          flatten=False,
-                                          args=args)
+            model = create_srnn_classifier_network(n_tokens = n_tokens,
+                                          len_max = len_max,
+                                          n_embeddings = args.embeddings,
+                                          n_rnn = args.n_rnn,
+                                          activation = 'tanh',
+                                          hidden = args.hidden,
+                                          activation_hidden = 'elu',
+                                          n_outputs = n_classes,
+                                          activation_output = 'softmax',
+                                          dropout = args.dropout,
+                                          recurrent_dropout = args.recurrent_dropout,
+                                          lrate = args.lrate,
+                                          lamda_regularization = kernel,
+                                          binding_threshold = 0.42,
+                                          loss = 'sparse_categorical_crossentropy',
+                                          metrics = ['sparse_categorical_accuracy'],)
     else:
-            model = create_srnn_classifier_network(data_size=int(data_out['len_max']),
-                                          conv_layers=conv_layers,
-                                          dense_layers=dense_layers,
-                                          p_dropout=args.dropout,
-                                          # p_spatial_dropout=args.spatial_dropout,
-                                          lambda_l2=args.L2_regularization,
-                                          lambda_l1=args.L1_regularization,
-                                          lrate=args.lrate, n_classes=n_classes,
-                                          loss='sparse_categorical_crossentropy',
-                                          metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
-                                          padding=args.padding,
-                                          flatten=False,
-                                          args = args)
-
+            model = create_srnn_classifier_network(n_tokens = n_tokens,
+                                          len_max = len_max,
+                                          n_embeddings = args.embeddings,
+                                          n_rnn = args.n_rnn,
+                                          activation = 'tanh',
+                                          hidden = args.hidden,
+                                          activation_hidden = 'elu',
+                                          n_outputs = n_classes,
+                                          activation_output = 'softmax',
+                                          dropout = args.dropout,
+                                          recurrent_dropout = args.recurrent_dropout,
+                                          lrate = args.lrate,
+                                          lamda_regularization = kernel,
+                                          binding_threshold = 0.42,
+                                          loss = 'sparse_categorical_crossentropy',
+                                          metrics = ['sparse_categorical_accuracy'],
+                                          )
     
     # Report model structure if verbosity is turned on
     if args.verbose >= 1:
