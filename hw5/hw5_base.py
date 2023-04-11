@@ -410,6 +410,7 @@ def execute_exp(args=None, multi_gpus=False):
         with mirrored_strategy.scope():
 
             if args.model == 'rnn':
+                print("Running RNN model")
             # Build network: you must provide your own implementation
                 model = create_srnn_classifier_network(n_tokens = n_tokens,
                                             len_max = len_max,
@@ -428,9 +429,12 @@ def execute_exp(args=None, multi_gpus=False):
                                             loss = 'sparse_categorical_crossentropy',
                                             metrics = ['sparse_categorical_accuracy'],)
             elif args.model == 'cnn':
+                print("Running CNN model")
                 pass 
+                
             
             elif args.model == 'rnn_pooling':
+                print("Running RNN pooling model")
                 pass
             
             else: 
@@ -439,6 +443,7 @@ def execute_exp(args=None, multi_gpus=False):
             
     else:
         if args.model == 'rnn':
+            print("Running RNN model")
             model = create_srnn_classifier_network(n_tokens = n_tokens,
                                           len_max = len_max,
                                           n_embeddings = args.embeddings,
@@ -457,9 +462,11 @@ def execute_exp(args=None, multi_gpus=False):
                                           metrics = ['sparse_categorical_accuracy'],
                                           )
         elif args.model == 'cnn':
+            print("Running CNN model")
             pass
         
         elif args.model == 'rnn_pooling':
+            print("Running RNN pooling model")
             pass
         
         else: 
