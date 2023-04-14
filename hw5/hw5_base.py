@@ -118,7 +118,7 @@ def create_parser():
     parser.add_argument('--conv_size', nargs='+', type=int, default=[3,5], help='Convolution filter size per layer (sequence of ints)')
     parser.add_argument('--conv_nfilters', nargs='+', type=int, default=[10,15], help='Convolution filters per layer (sequence of ints)')
     parser.add_argument('--n_rnn', nargs='+', type=int, default=[3,5], help='RNN size per layer (sequence of ints)')
-     # parser.add_argument('--conv_nfilters', nargs='+', type=int, default=[10,15], help='Convolution filters per layer (sequence of ints)')
+    parser.add_argument('--n_filters', nargs='+', type=int, default=[10,15], help='Convolution filters per layer (sequence of ints)')
     parser.add_argument('--pool', nargs='+', type=int, default=[2,2], help='Max pooling size (1=None)')
     parser.add_argument('--padding', type=str, default='valid', help='Padding type for convolutional layers')
 
@@ -458,12 +458,30 @@ def execute_exp(args=None, multi_gpus=False):
                                           lrate = args.lrate,
                                           lamda_regularization = kernel,
                                           binding_threshold = 0.42,
-                                          loss = 'sparse_categorical_crossentropy',
+                                          loss = keras.losses.SparseCategoricalCrossentropy(from_logits=False),
                                           metrics = ['sparse_categorical_accuracy'],
                                           )
         elif args.model == 'cnn':
             print("Running CNN model")
-            pass
+
+            model = cnn_classifier(
+                                    n_tokens = n_tokens,
+                                    len_max = len_max,
+                                    n_embeddings = args.embeddings,
+                                    n_cnn = args.conv_size,
+                                    n_filters = args.n_filters,
+                                    hidden = args.hidden,
+                                    activation_hidden = args.activation_dense,
+                                    n_outputs = n_classes,
+                                    avg_pooling=args.pool,
+                                    activation_output = args.activation_out,
+                                    dropout = args.dropout,
+                                    spatial_dropout = args.spatial_dropout,
+                                    lrate = args.lrate,
+                                    lamda_regularization = kernel,
+                                    loss = 'sparse_categorical_crossentropy',
+                                    metrics=[tf.keras.metrics.SparseCategoricalAccuracy()])
+            
         
         elif args.model == 'rnn_pooling':
             print("Running RNN pooling model")
