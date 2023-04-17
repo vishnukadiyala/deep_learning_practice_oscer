@@ -390,17 +390,14 @@ def execute_exp(args=None, multi_gpus=False):
     # NOTE: this is very specific to our implementation of create_cnn_classifier_network()
     #   List comprehension and zip all in one place (ugly, but effective).
     #   Feel free to organize this differently
-    dense_layers = [{'units': i} for i in args.hidden]
+    # dense_layers = [{'units': i} for i in args.hidden]
     
-    conv_layers = [{'filters': f, 'kernel_size': (s,s), 'pool_size': (p,p), 'strides': (p,p)} if p > 1
-                   else {'filters': f, 'kernel_size': (s,s), 'pool_size': None, 'strides': None}
-                   for s, f, p, in zip(args.conv_size, args.conv_nfilters, args.pool)]
+    # conv_layers = [{'filters': f, 'kernel_size': (s,s), 'pool_size': (p,p), 'strides': (p,p)} if p > 1
+    #                else {'filters': f, 'kernel_size': (s,s), 'pool_size': None, 'strides': None}
+    #                for s, f, p, in zip(args.conv_size, args.conv_nfilters, args.pool)]
     
-    rnn_layers = [{'n_rnn': i} for i in args.n_rnn]
+    # rnn_layers = [{'n_rnn': i} for i in args.n_rnn]
     
-    print("Dense layers:", dense_layers)
-    print("Conv layers:", conv_layers)
-    print("RNN layers:", rnn_layers)
 
     kernel = build_regularization_kernel(args.L1_regularization, args.L2_regularization)
 
@@ -453,6 +450,7 @@ def execute_exp(args=None, multi_gpus=False):
                                           activation_hidden = args.activation_dense,
                                           n_outputs = n_classes,
                                           activation_output = args.activation_out,
+                                          avg_pooling=args.pool,
                                           dropout = args.dropout,
                                           recurrent_dropout = args.recurrent_dropout,
                                           lrate = args.lrate,
@@ -483,9 +481,29 @@ def execute_exp(args=None, multi_gpus=False):
                                     metrics=[tf.keras.metrics.SparseCategoricalAccuracy()])
             
         
-        elif args.model == 'rnn_pooling':
-            print("Running RNN pooling model")
-            pass
+        elif args.model == 'gru':
+            print("Running GRU model")
+            
+            model = create_gru_network(
+                                        n_tokens = n_tokens,
+                                        len_max = len_max,
+                                        n_embeddings = args.embeddings,
+                                        n_rnn = args.n_rnn,
+                                        n_cnn = args.n_filters,
+                                        n_filters = args.n_filters,
+                                        activation = args.activation_rnn,
+                                        hidden = args.hidden,
+                                        avg_pooling = args.pool,
+                                        activation_hidden = args.activation_dense,
+                                        n_outputs = n_classes,
+                                        activation_output = args.activation_out,
+                                        dropout = args.dropout,
+                                        recurrent_dropout = args.recurrent_dropout,
+                                        lrate = args.lrate,
+                                        lambda_regularization = kernel,
+                                        loss = keras.losses.SparseCategoricalCrossentropy(from_logits=False),
+                                        metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
+                                        )
         
         else: 
             print("Model is not defined")
@@ -558,6 +576,10 @@ def execute_exp(args=None, multi_gpus=False):
         model.save("%s_model"%(fbase))
 
     print(fbase)
+    
+    args.exp_index += 1
+    
+    execute_exp(args)
     
     return model
 
