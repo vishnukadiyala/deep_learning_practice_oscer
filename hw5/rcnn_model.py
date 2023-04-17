@@ -39,6 +39,8 @@ def create_srnn_classifier_network(
                                     dropout = None,
                                     recurrent_dropout = None,
                                     lrate = 0.001,
+                                    unroll = False,
+                                    avg_pooling = None,
                                     lamda_regularization = None,
                                     binding_threshold = 0.42,
                                     loss = 'sparse_categorical_crossentropy',
@@ -66,15 +68,20 @@ def create_srnn_classifier_network(
                             recurrent_dropout = recurrent_dropout,
                             kernel_regularizer = lamda_regularization,
                             recurrent_regularizer = lamda_regularization,
+                            unroll=unroll,
                             name = 'rnn_layer_{}'.format(i+1)
                             ))
+        if avg_pooling is not None:
+           model.add(AveragePooling1D(pool_size=avg_pooling[i], strides=None, padding='valid', name = 'pooling_layer_{}'.format(i+1)))
         
         
-        #if avg_pooling is not None:
-        #    model.add(AveragePooling1D(pool_size=4, strides=None, padding='valid', data_format='channels_last', name = 'pooling_layer_{}'.format(i+1)))
+
         
         # model.add(AveragePooling1D(pool_size=4, strides=None, padding='valid', data_format='channels_last', name = 'pooling_layer_{}'.format(i+1)))
 
+    if avg_pooling is not None:
+        model.add(AveragePooling1D(pool_size=avg_pooling[-1], strides=None, padding='valid', name = 'pooling_layer_last'))
+    
     model.add(SimpleRNN(
                         units = n_rnn[-1],
                         activation = activation,
@@ -83,10 +90,12 @@ def create_srnn_classifier_network(
                         recurrent_dropout = recurrent_dropout,
                         kernel_regularizer = lamda_regularization,
                         recurrent_regularizer = lamda_regularization,
+                        unroll=unroll,
                         name = 'rnn_layer_last' ))
     
     # Add dense Layers
     
+
     for i,n in enumerate(hidden):
         
         model.add(Dense(

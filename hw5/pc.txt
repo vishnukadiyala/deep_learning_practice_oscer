@@ -1,0 +1,2 @@
+--dataset=/home/vishnu/vscode/AML/pfam
+--gpu

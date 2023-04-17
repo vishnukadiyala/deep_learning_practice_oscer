@@ -381,6 +381,8 @@ def execute_exp(args=None, multi_gpus=False):
     print(n_tokens)
     print(len_max)
     print(n_classes)
+    
+    del data_out
     # exit()
     
     ####################################################
@@ -433,9 +435,6 @@ def execute_exp(args=None, multi_gpus=False):
                 pass 
                 
             
-            elif args.model == 'rnn_pooling':
-                print("Running RNN pooling model")
-                pass
             
             else: 
                 print("Model is not defined")
@@ -443,7 +442,12 @@ def execute_exp(args=None, multi_gpus=False):
             
     else:
         if args.model == 'rnn':
-            print("Running RNN model")
+            
+            if args.pool is not None:
+                print("Running RNN model with average pooling")
+            else:   
+                print("Running RNN model")
+            
             model = create_srnn_classifier_network(n_tokens = n_tokens,
                                           len_max = len_max,
                                           n_embeddings = args.embeddings,
@@ -456,6 +460,8 @@ def execute_exp(args=None, multi_gpus=False):
                                           dropout = args.dropout,
                                           recurrent_dropout = args.recurrent_dropout,
                                           lrate = args.lrate,
+                                          unroll=False,
+                                          avg_pooling=args.pool,
                                           lamda_regularization = kernel,
                                           binding_threshold = 0.42,
                                           loss = keras.losses.SparseCategoricalCrossentropy(from_logits=False),
@@ -482,11 +488,6 @@ def execute_exp(args=None, multi_gpus=False):
                                     loss = 'sparse_categorical_crossentropy',
                                     metrics=[tf.keras.metrics.SparseCategoricalAccuracy()])
             
-        
-        elif args.model == 'rnn_pooling':
-            print("Running RNN pooling model")
-            pass
-        
         else: 
             print("Model is not defined")
             exit() 
@@ -533,6 +534,8 @@ def execute_exp(args=None, multi_gpus=False):
                         validation_data=ds_validation,
                         callbacks=[early_stopping_cb])
 
+
+    
     # Generate results data
     results = {}
     results['args'] = args
@@ -556,10 +559,17 @@ def execute_exp(args=None, multi_gpus=False):
     # Save model
     if args.save_model:
         model.save("%s_model"%(fbase))
-
+    
     print(fbase)
     
-    return model
+    del ds_testing, ds_validation, ds_train, history, results, model
+    #Run the next index
+    args.exp_index +=1
+    
+    if args.exp_index < 5:
+        execute_exp(args)
+    
+    return None
 
 
 def check_completeness(args):
@@ -620,8 +630,8 @@ if __name__ == "__main__":
     print(physical_devices)
     if(n_physical_devices > 0):
         py3nvml.grab_gpus(num_gpus=n_physical_devices, gpu_select=range(n_physical_devices))
-        for device in physical_devices:
-            tf.config.experimental.set_memory_growth(device, True)
+        # for device in physical_devices:
+            # tf.config.experimental.set_memory_growth(device, True)
         print('We have %d GPUs\n'%n_physical_devices)
     else:
         print('NO GPU')
