@@ -459,7 +459,6 @@ def execute_exp(args=None, multi_gpus=False):
                                           recurrent_dropout = args.recurrent_dropout,
                                           lrate = args.lrate,
                                           unroll=False,
-                                          avg_pooling=args.pool,
                                           lamda_regularization = kernel,
                                           binding_threshold = 0.42,
                                           loss = keras.losses.SparseCategoricalCrossentropy(from_logits=False),
@@ -511,6 +510,29 @@ def execute_exp(args=None, multi_gpus=False):
                                         metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
                                         )
         
+        elif args.model == 'lstm':
+            print("Running LSTM model")
+            
+            model = create_lstm_network(
+                                        n_tokens = n_tokens,
+                                        len_max = len_max,
+                                        n_embeddings = args.embeddings,
+                                        n_rnn = args.n_rnn,
+                                        n_cnn = args.n_filters,
+                                        n_filters = args.n_filters,
+                                        activation = args.activation_rnn,
+                                        hidden = args.hidden,
+                                        conv_size= args.pool,
+                                        activation_hidden = args.activation_dense,
+                                        n_outputs = n_classes,
+                                        activation_output = args.activation_out,
+                                        dropout = args.dropout,
+                                        recurrent_dropout = args.recurrent_dropout,
+                                        lrate = args.lrate,
+                                        lambda_regularization = kernel,
+                                        loss = keras.losses.SparseCategoricalCrossentropy(from_logits=False),
+                                        metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
+                                        )
         else: 
             print("Model is not defined")
             exit() 
@@ -585,11 +607,12 @@ def execute_exp(args=None, multi_gpus=False):
     
     print(fbase)
     
+    del results, model, history, ds_train, ds_validation, ds_testing 
     args.exp_index += 1
+    if args.exp_index < 5:
+        execute_exp(args)
     
-    execute_exp(args)
-    
-    return model
+    return None
 
 
 def check_completeness(args):

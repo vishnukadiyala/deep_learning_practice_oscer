@@ -17,4 +17,4 @@
 --activation_out=softmax
 --activation_dense=elu
 --activation_rnn=tanh
---results=results/gru/run2
+--results=results/gru/run1

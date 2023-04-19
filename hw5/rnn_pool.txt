@@ -19,4 +19,4 @@
 --activation_dense=elu
 --activation_rnn=tanh
 --model=rnn
---results_path=results/rnn_pool/run2
+--results_path=results/rnn_pool/run3

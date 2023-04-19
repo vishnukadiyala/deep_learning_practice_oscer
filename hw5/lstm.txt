@@ -1,5 +1,11 @@
+--pool
+3
+--n_filters
+80
 --n_rnn
 10
+10
+100
 --hidden
 120
 100
@@ -7,8 +13,8 @@
 --recurrent_dropout=0.1
 --lrate=.005
 --embeddings=50
+--model=lstm
 --activation_out=softmax
 --activation_dense=elu
 --activation_rnn=tanh
---model=rnn
---results_path=results/srnn/run3
+--results=results/lstm/run1

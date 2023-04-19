@@ -13,8 +13,7 @@ import time
 import fnmatch
 import scipy 
 import tensorflow as tf
-from core50 import *
-from hw3_base import *
+from hw5_base import *
 
 #################################################################
 # Default plotting parameters
@@ -40,17 +39,18 @@ def read_all_rotations(dirname, filebase):
         results.append(r)
     return results
 
+
 def create_parser():
     # Parse the command-line arguments
     parser = argparse.ArgumentParser(description='Plotter Function', fromfile_prefix_chars='@')
     
     # Path instructions handler 
-    parser.add_argument('--path', type = str, default = '/home/cs504305/deep_learning_practice/homework/hw3/results',help = 'Provide path to the result file')
-    parser.add_argument('--base', type = str, default = 'bmi_*results.pkl', help= 'Provide Filename structure, may use * for wildcard')
-    parser.add_argument('--shallow_path', type = str, default = '/home/cs504305/deep_learning_practice/homework/hw3/results/shallow/run3/', help= 'Provide Path to Shallow Network')
-    parser.add_argument('--deep_path', type = str, default = '/home/cs504305/deep_learning_practice/homework/hw3/results/deep/run9/', help= 'Provide path to Deep Network')
-    parser.add_argument('--shallow_base', type = str, default = 'image*rot*_results.pkl', help= 'Provide Filename structure for shallow results, may use * for wildcard')
-    parser.add_argument('--deep_base', type = str, default = 'image*rot*_results.pkl', help= 'Provide Filename structure for Deep results, may use * for wildcard')
+    parser.add_argument('--path', type = str, default = '/home/cs504305/deep_learning_practice/homework/hw5/results',help = 'Provide path to the result file')
+    # parser.add_argument('--base', type = str, default = 'bmi_*results.pkl', help= 'Provide Filename structure, may use * for wildcard')
+    parser.add_argument('--cnn_path', type = str, default = '/home/cs504305/deep_learning_practice/homework/hw5/results/shallow/run3/', help= 'Provide Path to CNN Network')
+    parser.add_argument('--srnn_path', type = str, default = '/home/cs504305/deep_learning_practice/homework/hw5/results/deep/run9/', help= 'Provide path to SRNN Network')
+    parser.add_argument('--rnn_pool_path', type = str, default = '/home/cs504305/deep_learning_practice/homework/hw5/results/deep/run9/', help= 'Provide path to RNN pool Network')
+    parser.add_argument('--base', type = str, default = 'image*rot*_results.pkl', help= 'Provide Filename structure for results, may use * for wildcard')
     # Print Figures
     parser.add_argument('--plot', action='store_true', help='Plot results')
     
@@ -194,15 +194,63 @@ def prepare_result(results):
     '''
     
     # Create data for plotting 
-    val_loss = []
+    
+    train_accuracy = []
     val_accuracy = []
     test_accuracy = []
     for i, result in enumerate(results):
-        val_loss.append(result['history']['val_loss'])
+        train_accuracy.append(result['history']['sparse_categorical_accuracy'])
         val_accuracy.append(result['history']['val_sparse_categorical_accuracy'])
         test_accuracy.append(result['predict_testing_eval'][1])
     
-    return val_loss, val_accuracy, test_accuracy
+    return train_accuracy, val_accuracy, test_accuracy
+
+def plot_results_new(data1, label1 = 'Hello' , data2 = None, label2 = None , data3 = None, label3 = None, data4 = None, label4 = None, graph_params = None):
+    
+    '''
+    We are taking the data as a set of all the results for each model including all rotations and plotting them
+    
+    ''' 
+    
+    for data in data1:
+        plt.plot(range(0,len(data)), data, label = label1 +'_Rot_' +str(data1.index(data)), alpha = 0.1 + 0.2*data1.index(data), color = 'red')
+    if data2 is not None:
+        for data in data2:
+            plt.plot(range(0,len(data)), data, label = label2 +'_Rot_' +str(data2.index(data)), alpha = 0.1 + 0.2*data2.index(data), color = 'blue')
+    if data3 is not None:
+        for data in data3:
+            plt.plot(range(0,len(data)), data, label = label3 +'_Rot_' +str(data3.index(data)), alpha = 0.1 + 0.2*data3.index(data), color = 'green')
+    if data4 is not None:
+        for data in data4:
+            plt.plot(range(0,len(data)), data, label = label4 +'_Rot_' +str(data4.index(data)), alpha = 0.1 + 0.2*data4.index(data), color = 'yellow')
+    
+    plt.legend()
+    if graph_params is not None:
+        plt.title(graph_params['title'])
+        plt.xlabel(graph_params['xlabel'])
+        plt.ylabel(graph_params['ylabel'])
+
+    plt.savefig("plots/Fig1_%s.png"%graph_params['title'])
+    print('Figure Saved: %s'%graph_params['title'])
+    plt.clf()
+    
+    return 0
+
+def plot_scatter(data1, data2, graph_params):
+    
+    plt.scatter(data1, data2)
+    
+    plt.legend()
+    if graph_params is not None:
+        plt.title(graph_params['title'])
+        plt.xlabel(graph_params['xlabel'])
+        plt.ylabel(graph_params['ylabel'])
+
+    plt.savefig("plots/Fig3_%s.png"%graph_params['title'])
+    print('Figure Saved: %s'%graph_params['title'])
+    plt.clf()
+    
+    return 0
 
 if __name__ == "__main__":
     
@@ -219,94 +267,49 @@ if __name__ == "__main__":
     ''' 
     
 
-    # Get the results for the deep models
-    deep = read_all_rotations(args.deep_path, args.deep_base)
-    shallow = read_all_rotations(args.shallow_path, args.shallow_base)
+    # Get the results for the all models
+    cnn = read_all_rotations(args.cnn_path, args.base)
+    srnn = read_all_rotations(args.srnn_path, args.base)
+    rnn_pool = read_all_rotations(args.rnn_pool_path, args.base)
     
     # Make the results in plottable format
-    deep_val_loss, deep_val_accuracy, deep_test_accuracy = prepare_result(deep)
-    shallow_val_loss, shallow_val_accuracy, shallow_test_accuracy = prepare_result(shallow)
     
-    make_test_predictions(deep,shallow) 
+    cnn_train_accuracy, cnn_val_accuracy, cnn_test_accuracy = prepare_result(cnn)
+    srnn_train_accuracy, srnn_val_accuracy, srnn_test_accuracy = prepare_result(srnn)
+    rnn_pool_train_accuracy, rnn_pool_val_accuracy, rnn_pool_test_accuracy = prepare_result(rnn_pool)
+    
+    print(rnn_pool_test_accuracy)
+    # make_test_predictions(deep,shallow) 
 
     '''
-  Plot Figures 1 2 3 4 
+  Plot Figures 1 2 3 
   
-  We are plotting a total of 6 figures here 
+  We are plotting a total of 3 figures here 
   
-  1. Validation Loss of Deep Networks, Across all rotations 
-  2. Validation Accuracy of Deep Networks, Across all rotations
-  3. Validation Loss of Shallow Networks, Across all rotations 
-  4. Validation Accuracy of Shallow Networks, Across all rotations
-  5. Test Accuracy of Deep Networks and shallow networks, Across all rotations
-  6. predicted test labels of Deep Networks and shallow networks, Across few images
+    1. Training set accuracy as a function of epoch for each rotation.
+    2. Validation set accuracy as a function of epoch for each rotation.
+    3. Scatter plot of the test set accuracy for each rotation.
   
   We had to make multiple iterations of plot_results because we have some amount of manual inputs going into the function here. 
   Figures and Plots need to be personalized for this task
     '''
     if args.plot:
-        plot_results(
-            epochs = [range(1000)],
-            data1 = (deep_val_loss[0], "Deep_rot_00"),
-            data2 = (deep_val_loss[1], "Deep_rot_01"),
-            data3 = (deep_val_loss[2], "Deep_rot_02"),
-            data4 = (deep_val_loss[3], "Deep_rot_03"),
-            data5 = (deep_val_loss[4], "Deep_rot_04"),
-            xlabel = "Epochs",
-            ylabel = "Val_loss",
-            title = "Deep Network Validation Loss across Rotations"
-            
-        )
+        :530031533535
+        # Plot Figure 1
+        graph_params = {'title': 'Training Set Accuracy', 'xlabel': 'Epochs', 'ylabel': 'Accuracy'}
+        plot_results_new(cnn_train_accuracy, 'CNN', srnn_train_accuracy, 'SRNN', rnn_pool_train_accuracy, 'RNN_Pool', graph_params = graph_params)
+        
+        # Plot Figure 2
+        graph_params = {'title': 'Validation Set Accuracy', 'xlabel': 'Epochs', 'ylabel': 'Accuracy'}
+        plot_results_new(cnn_val_accuracy, 'CNN', srnn_val_accuracy, 'SRNN', rnn_pool_val_accuracy, 'RNN_Pool', graph_params = graph_params)
+        
+        # Figure 3
+        
+        #Compute Test Accuracy(CNN) - Test Accuracy(SRNN)
+        
+        for i in range(len(cnn_test_accuracy)):
+            cnn_test_accuracy[i] = cnn_test_accuracy[i] - srnn_test_accuracy[i]
+            rnn_pool_test_accuracy[i] = rnn_pool_test_accuracy[i] - srnn_test_accuracy[i]
 
-        
-        plot_results(
-            epochs = [range(1000)],
-            data1 = (deep_val_accuracy[0], "Deep_rot_00"),
-            data2 = (deep_val_accuracy[1], "Deep_rot_01"),
-            data3 = (deep_val_accuracy[2], "Deep_rot_02"),
-            data4 = (deep_val_accuracy[3], "Deep_rot_03"),
-            data5 = (deep_val_accuracy[4], "Deep_rot_04"),
-            xlabel = "Epochs",
-            ylabel = "Val_Accuracy",
-            title = "Deep Network Validation Accuracy across Rotations"
-            
-        )
-        
-        
-        plot_results(
-            epochs = [range(1000)],
-            data1 = (shallow_val_loss[0], "Shallow_rot_00"),
-            data2 = (shallow_val_loss[1], "Shallow_rot_01"),
-            data3 = (shallow_val_loss[2], "Shallow_rot_02"),
-            data4 = (shallow_val_loss[3], "Shallow_rot_03"),
-            data5 = (shallow_val_loss[4], "Shallow_rot_04"),
-            xlabel = "Epochs",
-            ylabel = "Val_Loss",
-            title = "Shallow Network Validation Loss across Rotations"
-            
-        )
-        
-        plot_results(
-            epochs = [range(1000)],
-            data1 = (shallow_val_accuracy[0], "Shallow_rot_00"),
-            data2 = (shallow_val_accuracy[1], "Shallow_rot_01"),
-            data3 = (shallow_val_accuracy[2], "Shallow_rot_02"),
-            data4 = (shallow_val_accuracy[3], "Shallow_rot_03"),
-            data5 = (shallow_val_accuracy[4], "Shallow_rot_04"),
-            xlabel = "Epochs",
-            ylabel = "Val_Accuracy",
-            title = "Shallow Network Validation Accuracy across Rotations"
-            
-        )
-
-        # Plot Figure 3 
-        
-        plot_hist(
-            data1 = shallow_test_accuracy,
-            data2 = deep_test_accuracy,
-            title = "Test Accuracy comparision"
-        )
-        
-        # Plot Figure 4 
-        
-        #plot_images()
+        graph_params = {'title': 'Test Set Accuracy', 'xlabel': 'CNN - SRNN', 'ylabel': 'RNN_Pool - SRNN'}
+        plot_scatter(cnn_test_accuracy, rnn_pool_test_accuracy, graph_params = graph_params)

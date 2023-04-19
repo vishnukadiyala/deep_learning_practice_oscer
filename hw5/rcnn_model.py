@@ -108,7 +108,7 @@ def create_gru_network(
                         recurrent_dropout = recurrent_dropout,
                         kernel_regularizer = lambda_regularization,
                         recurrent_regularizer = lambda_regularization,
-                        unroll=False,
+                        unroll=True,
                         name = 'gru_layer_{}'.format(i+1)
                         ))
     model.add(GRU(
@@ -119,7 +119,7 @@ def create_gru_network(
                     recurrent_dropout = recurrent_dropout,
                     kernel_regularizer = lambda_regularization,
                     recurrent_regularizer = lambda_regularization,
-                    unroll=False,
+                    unroll=True,
                     name = 'gru_layer_last'
                     ))
     
@@ -174,7 +174,6 @@ def create_srnn_classifier_network(
                                     recurrent_dropout = None,
                                     lrate = 0.001,
                                     unroll = False,
-                                    avg_pooling = None,
                                     lamda_regularization = None,
                                     binding_threshold = 0.42,
                                     loss = 'sparse_categorical_crossentropy',
@@ -202,7 +201,7 @@ def create_srnn_classifier_network(
                             recurrent_dropout = recurrent_dropout,
                             kernel_regularizer = lamda_regularization,
                             recurrent_regularizer = lamda_regularization,
-                            unroll=False,
+                            unroll=True,
                             name = 'rnn_layer_{}'.format(i+1)
                             ))
         if avg_pooling is not None:
@@ -218,7 +217,7 @@ def create_srnn_classifier_network(
                         recurrent_dropout = recurrent_dropout,
                         kernel_regularizer = lamda_regularization,
                         recurrent_regularizer = lamda_regularization,
-                        unroll=False,
+                        unroll=True,
                         name = 'rnn_layer_last' ))
 
     
@@ -336,3 +335,95 @@ def cnn_classifier(
     model.compile(optimizer=opt, loss='sparse_categorical_crossentropy', metrics=[tf.keras.metrics.SparseCategoricalAccuracy()])
     
     return model
+
+def create_lstm_network(
+                        n_tokens = 1000,
+                        len_max = 100,
+                        n_embeddings = 25,
+                        n_rnn = [100,100],
+                        n_cnn = None,
+                        n_filters = [100,100],
+                        activation = 'tanh',
+                        hidden = [100,100],
+                        conv_size = None,
+                        activation_hidden = 'elu',
+                        n_outputs = 10,
+                        activation_output = 'softmax',
+                        dropout = None,
+                        recurrent_dropout = None,
+                        lrate = 0.001,
+                        lambda_regularization = None,
+                        loss = 'sparse_categorical_crossentropy',
+                        metrics=[tf.keras.metrics.SparseCategoricalAccuracy()]
+                        ):
+    '''
+    
+    Create an LSTM network
+    '''
+    
+    model = Sequential()
+    
+    model.add(Embedding(n_tokens, n_embeddings, input_length = len_max))
+    
+    if n_filters is not None:
+        for i,n in enumerate(n_filters):
+            model.add(Conv1D(n, 
+                             conv_size[i],
+                             padding = 'valid', 
+                             activation = activation_hidden, 
+                             name = 'conv_{}'.format(i)))
+            
+            if dropout is not None:
+                model.add(Dropout(dropout))
+    
+    for i,n in enumerate(n_rnn[:-1]):
+        model.add(LSTM(n, 
+                       activation = activation, 
+                       return_sequences = True, 
+                       dropout = dropout, 
+                       recurrent_dropout = recurrent_dropout, 
+                       kernel_regularizer = lambda_regularization, 
+                       recurrent_regularizer = lambda_regularization, 
+                       unroll=False,
+                       name = 'lstm_layer_{}'.format(i+1)))
+    
+    model.add(LSTM(n_rnn[-1], 
+                   activation = activation, 
+                   return_sequences = False, 
+                   dropout = dropout, 
+                   recurrent_dropout = recurrent_dropout, 
+                   kernel_regularizer = lambda_regularization, 
+                   recurrent_regularizer = lambda_regularization, 
+                   unroll=False, 
+                   name = 'lstm_layer_last'))
+    
+    for i,n in enumerate(hidden):
+        
+        model.add(Dense(
+                        units = n,
+                        activation = activation_hidden,
+                        kernel_regularizer = lambda_regularization,
+                        use_bias = True,
+                        bias_initializer = 'zeros',
+                        kernel_initializer = 'truncated_normal',
+                        name = 'dense_layer_{}'.format(i+1)
+                        ))
+        if dropout is not None:
+            model.add(Dropout(dropout))
+            
+    model.add(Dense(n_outputs,
+                    activation = activation_output,
+                    name = 'output_layer'))
+    
+    '''
+    Add optimizer to the model and compile the model
+    
+    '''
+    
+    opt = tf.keras.optimizers.Adam(learning_rate=lrate, amsgrad=True, clipvalue=0.5,beta_1=0.9, beta_2=0.999, epsilon=1e-07, name='Adam' )
+    
+    model.compile(optimizer=opt, loss='sparse_categorical_crossentropy', metrics=[tf.keras.metrics.SparseCategoricalAccuracy()])
+    
+    return model    
+    
+    
