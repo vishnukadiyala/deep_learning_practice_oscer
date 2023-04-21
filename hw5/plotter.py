@@ -13,6 +13,13 @@ import time
 import fnmatch
 import scipy 
 import tensorflow as tf
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
+if tf.test.gpu_device_name():
+    print('GPU found')
+else:
+    print("No GPU found")
 from hw5_base import *
 
 #################################################################
@@ -238,9 +245,12 @@ def plot_results_new(data1, label1 = 'Hello' , data2 = None, label2 = None , dat
 
 def plot_scatter(data1, data2, graph_params):
     
-    plt.scatter(data1, data2)
+    # Plot the scatter plot of the data
+    plt.scatter(data1, data2, c=['red', 'blue', 'green', 'yellow', 'orange'], alpha = 0.5, s = [100, 100, 100, 100, 100])
     
-    plt.legend()
+    for i in range(len(data1)):
+        plt.text(data1[i], data2[i], str(i), fontsize=12)  
+    
     if graph_params is not None:
         plt.title(graph_params['title'])
         plt.xlabel(graph_params['xlabel'])
@@ -254,6 +264,8 @@ def plot_scatter(data1, data2, graph_params):
 
 if __name__ == "__main__":
     
+    # Hide GPU from visible devices
+    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
     
     parser = create_parser()
     args = parser.parse_args()
@@ -294,7 +306,7 @@ if __name__ == "__main__":
   Figures and Plots need to be personalized for this task
     '''
     if args.plot:
-        :530031533535
+    
         # Plot Figure 1
         graph_params = {'title': 'Training Set Accuracy', 'xlabel': 'Epochs', 'ylabel': 'Accuracy'}
         plot_results_new(cnn_train_accuracy, 'CNN', srnn_train_accuracy, 'SRNN', rnn_pool_train_accuracy, 'RNN_Pool', graph_params = graph_params)
@@ -311,5 +323,5 @@ if __name__ == "__main__":
             cnn_test_accuracy[i] = cnn_test_accuracy[i] - srnn_test_accuracy[i]
             rnn_pool_test_accuracy[i] = rnn_pool_test_accuracy[i] - srnn_test_accuracy[i]
 
-        graph_params = {'title': 'Test Set Accuracy', 'xlabel': 'CNN - SRNN', 'ylabel': 'RNN_Pool - SRNN'}
+        graph_params = {'title': 'Test Set Accuracy for each rotation', 'xlabel': 'CNN - SRNN', 'ylabel': 'RNN_Pool - SRNN'}
         plot_scatter(cnn_test_accuracy, rnn_pool_test_accuracy, graph_params = graph_params)

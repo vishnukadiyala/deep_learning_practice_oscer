@@ -19,22 +19,13 @@ from keras.layers import Dense, Activation, Flatten, Dropout, BatchNormalization
 from keras.layers import Conv2D, MaxPooling2D
 from tensorflow.keras.utils import plot_model
 
-#############
-# REMOVE THESE LINES if symbiotic_metrics, job_control, networks are in the same directory
-tf_tools = "../../../../tf_tools/"
-sys.path.append(tf_tools + "metrics")
-sys.path.append(tf_tools + "experiment_control")
-sys.path.append(tf_tools + "networks")
-#############
-
 # Provided
-from symbiotic_metrics import *
+# from symbiotic_metrics import *
 from job_control import *
-# from core50 import *
 from pfam_loader import *
 
 # You need to provide this yourself
-from deep_learning_practice_oscer.hw5.models import *
+from custom_models import *
 import matplotlib.pyplot as plt
 #################################################################
 # Default plotting parameters
@@ -118,6 +109,7 @@ def create_parser():
     parser.add_argument('--conv_size', nargs='+', type=int, default=[3,5], help='Convolution filter size per layer (sequence of ints)')
     parser.add_argument('--conv_nfilters', nargs='+', type=int, default=[10,15], help='Convolution filters per layer (sequence of ints)')
     parser.add_argument('--n_rnn', nargs='+', type=int, default=[3,5], help='RNN size per layer (sequence of ints)')
+    parser.add_argument('--n_mha', nargs='+', type=int, default=[3,5], help='MultiHeadAttention size per layer (sequence of ints)')
     parser.add_argument('--n_filters', nargs='+', type=int, default=[10,15], help='Convolution filters per layer (sequence of ints)')
     parser.add_argument('--pool', nargs='+', type=int, default=[2,2], help='Max pooling size (1=None)')
     parser.add_argument('--padding', type=str, default='valid', help='Padding type for convolutional layers')
@@ -533,6 +525,28 @@ def execute_exp(args=None, multi_gpus=False):
                                         loss = keras.losses.SparseCategoricalCrossentropy(from_logits=False),
                                         metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
                                         )
+        elif args.model == 'mha':
+            print("Running Multi-Head Attention model")
+            
+            model = create_mha_network(
+                                        n_tokens = n_tokens,
+                                        len_max = len_max,
+                                        n_embeddings = args.embeddings,
+                                        n_mha = args.n_mha,
+                                        n_cnn = args.n_filters,
+                                        n_filters = args.n_filters,
+                                        activation = args.activation_rnn,
+                                        hidden = args.hidden,
+                                        conv_size= args.pool,
+                                        activation_hidden = args.activation_dense,
+                                        n_outputs = n_classes,
+                                        activation_output = args.activation_out,
+                                        dropout = args.dropout,
+                                        lrate = args.lrate,
+                                        lambda_regularization = kernel,
+                                        loss = keras.losses.SparseCategoricalCrossentropy(from_logits=False),
+                                        metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
+                                        )
         else: 
             print("Model is not defined")
             exit() 
@@ -580,7 +594,11 @@ def execute_exp(args=None, multi_gpus=False):
                         callbacks=[early_stopping_cb])
 
 
+    # Save model
+    if args.save_model:
+        model.save("%s_model"%(fbase))
     
+    print(fbase)
     # Generate results data
     results = {}
     results['args'] = args
@@ -591,8 +609,8 @@ def execute_exp(args=None, multi_gpus=False):
         results['predict_testing'] = model.predict(ds_testing)
         results['predict_testing_eval'] = model.evaluate(ds_testing)
         
-    results['predict_training'] = model.predict(ds_train)
-    results['predict_training_eval'] = model.evaluate(ds_train)
+    results['predict_training'] = model.predict(ds_train, steps = args.steps_per_epoch)
+    results['predict_training_eval'] = model.evaluate(ds_train, steps = args.steps_per_epoch)
     results['history'] = history.history
 
     # Save results
@@ -601,11 +619,8 @@ def execute_exp(args=None, multi_gpus=False):
     with open("%s_results.pkl"%(fbase), "wb") as fp:
         pickle.dump(results, fp)
     
-    # Save model
-    if args.save_model:
-        model.save("%s_model"%(fbase))
     
-    print(fbase)
+    
     
     del results, model, history, ds_train, ds_validation, ds_testing 
     args.exp_index += 1

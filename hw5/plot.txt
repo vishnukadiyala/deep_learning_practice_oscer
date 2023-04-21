@@ -1,0 +1,4 @@
+--cnn_path=/home/vishnu/vscode/AML/deep_learning_practice_oscer/hw5/results/cnn/run1
+--rnn_pool_path=/home/vishnu/vscode/AML/deep_learning_practice_oscer/hw5/results/rnn_pool/run2
+--srnn_path=/home/vishnu/vscode/AML/deep_learning_practice_oscer/hw5/results/srnn/run3
+--plot
