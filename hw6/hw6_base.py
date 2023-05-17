@@ -1,11 +1,11 @@
 '''
 Advanced Machine Learning, 2023
-HW 5 Base Code
+HW 7 Base Code
 
 Author: Andrew H. Fagg (andrewhfagg@gmail.com)
 Editor: Vishnu Kadiyala (vishnupk@ou.edu) 
 
-Protien prediction for the pfamB dataset
+Segmentation problem on the chesapeake bay dataset
 
 '''
 
@@ -623,6 +623,7 @@ def execute_exp(args=None, multi_gpus=False):
     
     
     del results, model, history, ds_train, ds_validation, ds_testing 
+    
     args.exp_index += 1
     if args.exp_index < 5:
         execute_exp(args)

@@ -1,0 +1,10 @@
+--Ntraining=3
+--epochs=1000
+--patience=10
+--batch=16
+--shuffle=100
+--repeat
+--steps_per_epoch=100
+--monitor=val_sparse_categorical_accuracy
+--exp_index=0
+-vv

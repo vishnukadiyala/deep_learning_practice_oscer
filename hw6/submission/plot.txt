@@ -1,0 +1,3 @@
+--mha_path=/home/vishnu/vscode/AML/deep_learning_practice_oscer/hw6/results/mha/run1
+--gru_path=/home/vishnu/vscode/AML/deep_learning_practice_oscer/hw6/results/gru/run2
+--plot

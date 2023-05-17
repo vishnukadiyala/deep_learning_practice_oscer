@@ -1,0 +1,4 @@
+--auto_path=/home/vishnu/vscode/AML/deep_learning_practice_oscer/hw7/results/autoencoder
+--unet_path=/home/vishnu/vscode/AML/deep_learning_practice_oscer/hw7/results/Unet
+--ds_path=/home/vishnu/vscode/AML/deep_learning_practice_oscer/hw7/results/ds_test
+--plot
